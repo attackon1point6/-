@@ -27,10 +27,20 @@ class UserCRUD:
         ).first()
         if not user:
             raise NotFoundException().with_message("this user is not found.")
-        elif user.password != password:
-            raise NotFoundException().with_message("password wrong.")
         else:
-            return True
+            if user.password != password:
+                status = False
+            else:
+                status = True
+            if user.role == 0:
+                isStudent = True
+            else:
+                isStudent =False
+            return {'status': status, 'isStudent': isStudent}
+
+    async def get_tea(self):
+        return queryToDict(self.db.query(User.userid, User.name).filter(User.role == 1).all())
+
 
     async def name(self):
-        return queryToDict(self.db.query(User).filter(User.name == 'jzc').all())
+        return queryToDict(self.db.query(User.userid).filter(User.name == 'jzc').all())

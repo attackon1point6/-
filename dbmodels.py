@@ -17,11 +17,11 @@ class HomeworkRecord(db.Model):
     id = db.Column(db.VARCHAR, primary_key=True)
     name = db.Column(db.String(200))
     score = db.Column(db.Float)
-    stuid = db.Column(db.Integer)
-    teaid = db.Column(db.Integer)
+    stuid = db.Column(db.VARCHAR)
+    teaid = db.Column(db.VARCHAR)
     stu_text = db.Column(db.String(200))
     tea_text = db.Column(db.String(200))
-    check = db.Column(db.Integer)
+    checked = db.Column(db.Integer)
 
 
 class HomeworkPicture(db.Model):
@@ -43,6 +43,6 @@ class FailedWork(db.Model):
 
 class AverageGrade(db.Model):
     __table_args__ = {"schema": 'hwork'}
-    __tablename__ = "averageGrade"
+    __tablename__ = "averagegrade"
     sid = db.Column(db.VARCHAR, primary_key=True)
     grade = db.Column(db.Float)

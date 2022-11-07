@@ -6,7 +6,7 @@ import configs
 from ext import db
 from views import user, homework
 # from crud.use_crud import UserCRUD
-# from crud.homework_crud import HoHomeworkCRUD
+# from crud.homework_crud import HomeworkCRUD
 
 app = Flask(__name__)
 app.config.from_object(configs)

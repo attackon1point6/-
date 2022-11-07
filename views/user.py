@@ -9,16 +9,19 @@ us = Blueprint("user", __name__)  #蓝图的对象的名称=Blueprint('自定义
 
 user_crud = UserCRUD(db.session)
 
-@us.route("/user/login", methods=['POST'])
+@us.route("/api/login", methods=['POST'])
 async def login():
     data = request.get_data()
     json_data = json.loads(data.decode('utf-8'))
-    userid = json_data.get('userid')
+    userid = json_data.get('userId')
     password = json_data.get('password')
-    return await user_crud.login_verify(userid, password)
+
+    login_info = await user_crud.login_verify(userid, password)
+
+    return jsonify(login_info)
 
 
-@us.route("/user/register", methods=['POST'])
+@us.route("/api/user/register", methods=['POST'])
 async def register():
     data = request.get_data()
     json_data = json.loads(data.decode('utf-8'))
@@ -27,6 +30,10 @@ async def register():
     password = json_data.get('password')
     return await user_crud.create_user(name, gender, password)
 
+
+@us.route("/api/get/teacher/list")
+async def get_tea():
+    return await jsonify(user_crud.get_tea())
 
 @us.route("/")
 async def name_test():

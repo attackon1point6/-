@@ -6,26 +6,31 @@ from sqlalchemy import DateTime, Numeric, Date, Time  # 有时又是DateTime
 
 
 def queryToDict(models):
-    if isinstance(models, list):
-        if isinstance(models[0], Model):
-            lst = []
-            for model in models:
-                gen = model_to_dict(model)
+    if models is not None:
+        if isinstance(models, list):
+            if len(models) == 0:
+                return {}
+            elif isinstance(models[0], Model):
+                lst = []
+                for model in models:
+                    gen = model_to_dict(model)
+                    dit = dict((g[0], g[1]) for g in gen)
+                    lst.append(dit)
+                return lst
+            else:
+                res = result_to_dict(models)
+                return res
+        else:
+            if isinstance(models, Model):
+                gen = model_to_dict(models)
                 dit = dict((g[0], g[1]) for g in gen)
-                lst.append(dit)
-            return lst
-        else:
-            res = result_to_dict(models)
-            return res
+                return dit
+            else:
+                res = dict(zip(models.keys(), models))
+                find_datetime(res)
+                return res
     else:
-        if isinstance(models, Model):
-            gen = model_to_dict(models)
-            dit = dict((g[0], g[1]) for g in gen)
-            return dit
-        else:
-            res = dict(zip(models.keys(), models))
-            find_datetime(res)
-            return res
+        return {}
 
 
 # 当结果为result对象列表时，result有key()方法
