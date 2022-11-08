@@ -52,7 +52,7 @@ class HomeworkCRUD:
     async def stu_get_homework_checked(self, stu_id: str):
         homework = self.db.query(HomeworkRecord).filter(
             HomeworkRecord.stuid == stu_id,
-            HomeworkRecord.check == 1
+            HomeworkRecord.checked == 1
         ).all()
         return queryToDict(homework)
 
@@ -92,15 +92,26 @@ class HomeworkCRUD:
         ).all()
         return queryToDict(homework)
 
-    async def tea_check_homework(self, homework_id, score, tea_text):
+    async def tea_check_homework(self, cursor, homework_id, score, tea_text):
         homework = self.db.query(HomeworkRecord).filter(
+            HomeworkRecord.id == '1'
+        ).first()
+        stu_id = homework.stuid
+        print("\n------------------\n")
+        print(stu_id)
+        print("\n------------------\n")
+        self.db.query(HomeworkRecord).filter(
             HomeworkRecord.id == homework_id
         ).update({
             'score': score,
             'tea_text': tea_text,
-            'check': 1
+            'checked': 1
         })
         self.db.commit()
+        #cursor.callproc('gradeProc', ["ssss"])
+        postgreSQL_select_Query = "call gradeproc ({})".format(stu_id)
+        cursor.execute(postgreSQL_select_Query)
+        mobile_records = cursor.fetchall()
         return True
 
     async def tea_get_failed_stu(self, tea_id):

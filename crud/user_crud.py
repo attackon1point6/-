@@ -9,9 +9,9 @@ class UserCRUD:
     def __init__(self, db):
         self.db = db
 
-    async def create_user(self, name=None, gender=None, password=None):
-        id = str(uuid.uuid4())
-        user1 = User(userid=id, name=name, gender=gender, password=password)
+    async def create_user(self, id, name=None, role=None, gender=None, password=None):
+        # id = str(uuid.uuid4())
+        user1 = User(userid=id, name=name, role=None, gender=gender, password=password)
         self.db.add(user1)
         self.db.commit()
         return id
@@ -42,5 +42,5 @@ class UserCRUD:
         return queryToDict(self.db.query(User.userid, User.name).filter(User.role == 1).all())
 
 
-    async def name(self):
-        return queryToDict(self.db.query(User.userid).filter(User.name == 'jzc').all())
+    async def get_user(self):
+        return queryToDict(self.db.query(User.userid, User.name, User.role, User.gender).filter().all())

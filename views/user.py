@@ -12,7 +12,7 @@ user_crud = UserCRUD(db.session)
 @us.route("/api/login", methods=['POST'])
 async def login():
     data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))
+    json_data = json.loads(data.decode('utf-8'))[0]
     userid = json_data.get('userId')
     password = json_data.get('password')
 
@@ -25,10 +25,19 @@ async def login():
 async def register():
     data = request.get_data()
     json_data = json.loads(data.decode('utf-8'))
-    name = json_data.get('name')
-    gender = json_data.get('gender')
-    password = json_data.get('password')
-    return await user_crud.create_user(name, gender, password)
+    re = True
+    for data in json_data:
+        name = data.get('name')
+        gender = data.get('gender')
+        password = data.get('password')
+        re = re and await user_crud.create_user(name, gender, password)
+    return re
+
+
+@us.route("/api/user/get_user_list")
+async def register():
+    user_list = await user_crud.get_user()
+    return jsonify(user_list)
 
 
 @us.route("/api/get/teacher/list")

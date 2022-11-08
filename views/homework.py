@@ -10,10 +10,15 @@ hwork = Blueprint("homework", __name__)  #蓝图的对象的名称=Blueprint('�
 homework_crud = HomeworkCRUD(db.session)
 
 
+# with hwork.app_context():
+#     connection = db.engine.raw_connection()
+#     cursor = connection.cursor()
+
+
 @hwork.route('/api/submit/homework', methods=['POST'])
 async def stu_upload_homework():
     data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))
+    json_data = json.loads(data.decode('utf-8'))[0]
     name = json_data.get('name')
     stuid = json_data.get('stuid')
     teaid = json_data.get('teaid')
@@ -85,14 +90,14 @@ async def tea_id_get_not_checked_work(tea_id: str):
     return jsonify(not_checked_work)
 
 
-@hwork.route('/api/check/homework', methods=['POST'])
-async def tea_id_check_work(homework_id: str):
-    data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))
-    homework_id = json_data.get('id')
-    score = json_data.get('score')
-    tea_text = json_data.get('tea_text')
-    return await homework_crud.tea_check_homework(homework_id, score, tea_text)
+# @hwork.route('/api/check/homework', methods=['POST'])
+# async def tea_id_check_work(homework_id: str):
+#     data = request.get_data()
+#     json_data = json.loads(data.decode('utf-8'))
+#     homework_id = json_data.get('id')
+#     score = json_data.get('score')
+#     tea_text = json_data.get('tea_text')
+#     return await homework_crud.tea_check_homework(cursor, homework_id, score, tea_text)
 
 
 @hwork.route('/homework/tea/<tea_id>/failedstu')
