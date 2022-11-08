@@ -1,5 +1,3 @@
-import json
-
 from flask import Flask, request, jsonify, Blueprint
 
 from ext import db
@@ -11,8 +9,9 @@ user_crud = UserCRUD(db.session)
 
 @us.route("/api/login", methods=['POST'])
 async def login():
-    data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))[0]
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))[0]
+    json_data = request.get_json()
     userid = json_data.get('userId')
     password = json_data.get('password')
 
@@ -23,8 +22,9 @@ async def login():
 
 @us.route("/api/user/register", methods=['POST'])
 async def register():
-    data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))
+    json_data = request.get_json()
     re = True
     for data in json_data:
         name = data.get('name')
@@ -35,7 +35,7 @@ async def register():
 
 
 @us.route("/api/user/get_user_list")
-async def register():
+async def get_user_list():
     user_list = await user_crud.get_user()
     return jsonify(user_list)
 
@@ -46,4 +46,4 @@ async def get_tea():
 
 @us.route("/")
 async def name_test():
-    return await user_crud.name()
+    return await user_crud.get_name()

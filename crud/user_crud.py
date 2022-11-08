@@ -3,7 +3,7 @@ import uuid
 from dbmodels import User
 from exception.not_found_exception import NotFoundException
 from query2dict import queryToDict
-
+from RSA import rsaDecrypt, privkey
 
 class UserCRUD:
     def __init__(self, db):
@@ -26,9 +26,9 @@ class UserCRUD:
             User.userid == id
         ).first()
         if not user:
-            raise NotFoundException().with_message("this user is not found.")
+            return False
         else:
-            if user.password != password:
+            if rsaDecrypt(user.password, privkey) != rsaDecrypt(password, privkey):
                 status = False
             else:
                 status = True
@@ -44,3 +44,7 @@ class UserCRUD:
 
     async def get_user(self):
         return queryToDict(self.db.query(User.userid, User.name, User.role, User.gender).filter().all())
+
+
+    async def get_name(self):
+        return queryToDict(self.db.query(User.userid, User.name).filter().all())

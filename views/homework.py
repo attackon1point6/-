@@ -1,5 +1,3 @@
-import json
-
 from flask import Flask, request, jsonify, Blueprint
 
 from ext import db
@@ -17,8 +15,9 @@ homework_crud = HomeworkCRUD(db.session)
 
 @hwork.route('/api/submit/homework', methods=['POST'])
 async def stu_upload_homework():
-    data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))[0]
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))[0]
+    json_data = request.get_json()
     name = json_data.get('name')
     stuid = json_data.get('stuid')
     teaid = json_data.get('teaid')
@@ -90,19 +89,20 @@ async def tea_id_get_not_checked_work(tea_id: str):
     return jsonify(not_checked_work)
 
 
-# @hwork.route('/api/check/homework', methods=['POST'])
-# async def tea_id_check_work(homework_id: str):
-#     data = request.get_data()
-#     json_data = json.loads(data.decode('utf-8'))
-#     homework_id = json_data.get('id')
-#     score = json_data.get('score')
-#     tea_text = json_data.get('tea_text')
-#     return await homework_crud.tea_check_homework(cursor, homework_id, score, tea_text)
+@hwork.route('/api/check/homework', methods=['POST'])
+async def tea_id_check_work():
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))[0]
+    json_data = request.get_json()
+    homework_id = json_data.get('id')
+    score = json_data.get('score')
+    tea_text = json_data.get('tea_text')
+    return await homework_crud.tea_check_homework(homework_id, score, tea_text)
 
 
-@hwork.route('/homework/tea/<tea_id>/failedstu')
-async def tea_get_failed_stu(tea_id: str):
-    failed_stu = await homework_crud.tea_get_failed_stu(tea_id)
+@hwork.route('/api/homework/faillist')
+async def tea_get_failed_work():
+    failed_stu = await homework_crud.tea_get_failed_work()
     return jsonify(failed_stu)
 
 
