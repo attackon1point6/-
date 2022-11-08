@@ -59,7 +59,7 @@ class HomeworkCRUD:
     async def stu_get_homework_not_checked(self, stu_id: str):
         homework = self.db.query(HomeworkRecord).filter(
             HomeworkRecord.stuid == stu_id,
-            HomeworkRecord.check == 0
+            HomeworkRecord.checked == 0
         ).all()
         return queryToDict(homework)
 
@@ -81,14 +81,14 @@ class HomeworkCRUD:
     async def tea_get_homework_checked(self, tea_id: str):
         homework = self.db.query(HomeworkRecord).filter(
             HomeworkRecord.tea_id == tea_id,
-            HomeworkRecord.check == 1
+            HomeworkRecord.checked == 1
         ).all()
         return queryToDict(homework)
 
     async def tea_get_homework_not_checked(self, tea_id: str):
         homework = self.db.query(HomeworkRecord).filter(
             HomeworkRecord.tea_id == tea_id,
-            HomeworkRecord.check == 0
+            HomeworkRecord.checked == 0
         ).all()
         return queryToDict(homework)
 
