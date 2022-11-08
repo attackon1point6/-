@@ -17,14 +17,19 @@ homework_crud = HomeworkCRUD(db.session)
 
 @hwork.route('/api/submit/homework', methods=['POST'])
 async def stu_upload_homework():
-    data = request.get_data()
-    json_data = json.loads(data.decode('utf-8'))[0]
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))[0]
+    json_data = request.get_json()
+    print('api/submit/homework')
+    print(json_data)
     name = json_data.get('name')
     stuid = json_data.get('stuid')
     teaid = json_data.get('teaid')
     stu_text = json_data.get('stu_text')
-    address = json_data.get('pic_address')
-    return await homework_crud.stu_upload_homework(name, stuid, teaid, stu_text, address)
+    address = json_data.get('address')
+    data = await homework_crud.stu_upload_homework(name, stuid, teaid, stu_text, address)
+    print(data)
+    return data
 
 
 @hwork.route('/api/get/homeworklist')
@@ -62,9 +67,12 @@ async def stu_get_homework_detail():
     return jsonify(homework_detail)
 
 
-@hwork.route('/homework/stu/<stu_id>/grade')
-async def stu_get_averageGrade(stu_id: str):
-    return await homework_crud.stu_get_averagegrade(stu_id)
+@hwork.route('/api/homework/stu/grade')
+async def stu_get_averageGrade():
+    stu_id = request.args.get('stuid')
+    data = await homework_crud.stu_get_averagegrade(stu_id)
+    print(data)
+    return data
 
 
 @hwork.route('/homework/tea/<tea_id>')
@@ -81,28 +89,34 @@ async def tea_id_get_checked_work(tea_id: str):
     return jsonify(checked_work)
 
 
-@hwork.route('/homework/tea/<tea_id>/not_checked')
-async def tea_id_get_not_checked_work(tea_id: str):
+@hwork.route('/api/get/homework/check')
+async def tea_id_get_not_checked_work():
     # data = request.get_data()
     # json_data = json.loads(data.decode('utf-8'))
     # stu_id = json_data.get('stu_id')
-    not_checked_work = await homework_crud.stu_get_homework_not_checked(tea_id)
+    tea_id = request.args.get('teaid')
+    print('api/get/homework/check')
+    print(tea_id)
+    not_checked_work = await homework_crud.tea_get_homework_not_checked(tea_id)
+    print(not_checked_work)
     return jsonify(not_checked_work)
 
 
-# @hwork.route('/api/check/homework', methods=['POST'])
-# async def tea_id_check_work(homework_id: str):
-#     data = request.get_data()
-#     json_data = json.loads(data.decode('utf-8'))
-#     homework_id = json_data.get('id')
-#     score = json_data.get('score')
-#     tea_text = json_data.get('tea_text')
-#     return await homework_crud.tea_check_homework(cursor, homework_id, score, tea_text)
+@hwork.route('/api/check/homework', methods=['POST'])
+async def tea_id_check_work():
+    # data = request.get_data()
+    # json_data = json.loads(data.decode('utf-8'))[0]
+    json_data = request.get_json()
+    print(json_data)
+    homework_id = json_data.get('id')
+    score = json_data.get('score')
+    tea_text = json_data.get('tea_text')
+    return await homework_crud.tea_check_homework(homework_id, score, tea_text)
 
 
-@hwork.route('/homework/tea/<tea_id>/failedstu')
-async def tea_get_failed_stu(tea_id: str):
-    failed_stu = await homework_crud.tea_get_failed_stu(tea_id)
+@hwork.route('/api/homework/faillist')
+async def tea_get_failed_work():
+    failed_stu = await homework_crud.tea_get_failed_work()
     return jsonify(failed_stu)
 
 

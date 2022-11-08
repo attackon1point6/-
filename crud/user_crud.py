@@ -3,15 +3,15 @@ import uuid
 from dbmodels import User
 from exception.not_found_exception import NotFoundException
 from query2dict import queryToDict
-
+from RSA import rsaDecrypt, privkey
 
 class UserCRUD:
     def __init__(self, db):
         self.db = db
 
-    async def create_user(self, id, name=None, role=None, gender=None, password=None):
+    async def create_user(self, userid, name=None,  gender=None, role=None, password=None):
         # id = str(uuid.uuid4())
-        user1 = User(userid=id, name=name, role=None, gender=gender, password=password)
+        user1 = User(userid=userid, name=name, gender=gender, role=role, password=password)
         self.db.add(user1)
         self.db.commit()
         return id
@@ -25,17 +25,21 @@ class UserCRUD:
         user = self.db.query(User).filter(
             User.userid == id
         ).first()
+
+        print(rsaDecrypt(user.password, privkey))
+        print(rsaDecrypt(password, privkey))
         if not user:
-            raise NotFoundException().with_message("this user is not found.")
+            return False
         else:
-            if user.password != password:
+            if rsaDecrypt(user.password, privkey) != rsaDecrypt(password, privkey):
+            # if user.password != password:
                 status = False
             else:
                 status = True
             if user.role == 0:
                 isStudent = True
             else:
-                isStudent =False
+                isStudent = False
             return {'status': status, 'isStudent': isStudent}
 
     async def get_tea(self):
@@ -44,3 +48,7 @@ class UserCRUD:
 
     async def get_user(self):
         return queryToDict(self.db.query(User.userid, User.name, User.role, User.gender).filter().all())
+
+
+    async def get_name(self):
+        return queryToDict(self.db.query(User.userid, User.name).filter().all())

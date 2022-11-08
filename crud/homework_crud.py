@@ -1,7 +1,11 @@
 import uuid
+from operator import or_
 
 from dbmodels import User, HomeworkRecord, HomeworkPicture, AverageGrade, FailedWork
 from query2dict import queryToDict
+
+import psycopg2
+
 
 class HomeworkCRUD:
     def __init__(self, db):
@@ -10,12 +14,12 @@ class HomeworkCRUD:
     async def stu_upload_homework(self, name, stuid, teaid, stu_text, address=None):
         homework_id = str(uuid.uuid4())
         picture_id = str(uuid.uuid4())
-        homework = HomeworkRecord(id=homework_id, name=name, stuid=stuid, teaid=teaid, stu_text=stu_text)
+        homework = HomeworkRecord(id=homework_id, name=name, stuid=stuid, teaid=teaid, stu_text=stu_text, checked=0)
         picture = HomeworkPicture(picid=picture_id, workid=homework_id, address=address)
         self.db.add(homework)
         self.db.add(picture)
         self.db.commit()
-        return True
+        return 'true'
 
     async def stu_get_homework(self, stu_id: str):
         homework = self.db.query(
@@ -26,7 +30,7 @@ class HomeworkCRUD:
             HomeworkRecord.teaid,
             HomeworkRecord.checked
         ).filter(
-            HomeworkRecord.stuid == stu_id
+            or_(HomeworkRecord.stuid == stu_id, HomeworkRecord.teaid == stu_id)
         ).all()
         return queryToDict(homework)
 
@@ -70,7 +74,7 @@ class HomeworkCRUD:
         if average_grade is not None:
             return {'grade': average_grade.grade}
         else:
-            return {}
+            return {'grade': 'null'}
 
     async def tea_get_homework(self, tea_id: str):
         homework = self.db.query(HomeworkRecord).filter(
@@ -86,47 +90,63 @@ class HomeworkCRUD:
         return queryToDict(homework)
 
     async def tea_get_homework_not_checked(self, tea_id: str):
-        homework = self.db.query(HomeworkRecord).filter(
-            HomeworkRecord.tea_id == tea_id,
+        homework = self.db.query(
+            HomeworkRecord.id,
+            HomeworkRecord.name,
+            HomeworkRecord.score,
+            HomeworkRecord.stuid,
+            HomeworkRecord.teaid,
+            HomeworkRecord.stu_text,
+            HomeworkRecord.tea_text,
+            HomeworkRecord.checked,
+        ).filter(
+            HomeworkRecord.teaid == tea_id,
             HomeworkRecord.checked == 0
         ).all()
         return queryToDict(homework)
 
-    async def tea_check_homework(self, cursor, homework_id, score, tea_text):
+    async def tea_check_homework(self, homework_id, score, tea_text):
+        conn = psycopg2.connect(database="db_hwork", user="user_hwork", password="user_hwork@1234", host="117.78.1.34",
+                                port="26000")
+        cursor = conn.cursor()
         homework = self.db.query(HomeworkRecord).filter(
-            HomeworkRecord.id == '1'
+            HomeworkRecord.id == homework_id
         ).first()
         stu_id = homework.stuid
-        print("\n------------------\n")
-        print(stu_id)
-        print("\n------------------\n")
-        self.db.query(HomeworkRecord).filter(
-            HomeworkRecord.id == homework_id
-        ).update({
-            'score': score,
-            'tea_text': tea_text,
-            'checked': 1
-        })
+
+        homework.score = score
+        homework.tea_text = tea_text
+        homework.checked = 1
         self.db.commit()
-        #cursor.callproc('gradeProc', ["ssss"])
-        postgreSQL_select_Query = "call gradeproc ({})".format(stu_id)
-        cursor.execute(postgreSQL_select_Query)
-        mobile_records = cursor.fetchall()
-        return True
 
-    async def tea_get_failed_stu(self, tea_id):
-        fail_stus = self.db.query(
-            User.name,
-            User.userid,
-            FailedWork.workid,
-            FailedWork.score
-        ).join(
-            FailedWork.stuid == User.userid
+        #cursor.execute("call hwork.gradeProc({})".format(stu_id))
+        try:
+            cursor.execute("call hwork.gradeProc({})".format(stu_id))
+            conn.commit()
+        except Exception as e:
+            conn = psycopg2.connect(database="db_hwork", user="user_hwork", password="user_hwork@1234",
+                                    host="117.78.1.34", port="26000")
+            cursor = conn.cursor()
+            cursor.execute("call hwork.gradeProc({})".format(stu_id))
+            conn.commit()
+        # conn.close()
+        return []
+
+
+    async def tea_get_failed_work(self):
+        fail_works = self.db.query(
+            HomeworkRecord.id,
+            HomeworkRecord.name,
+            HomeworkRecord.score,
+            HomeworkRecord.stuid,
+            HomeworkRecord.teaid,
+            HomeworkRecord.stu_text,
+            HomeworkRecord.tea_text
         ).filter(
-            FailedWork.teaid == tea_id
+            HomeworkRecord.score < 60
         ).all()
+        return queryToDict(fail_works)
 
-        return queryToDict(fail_stus)
 
     async def tea_get_picture(self, workid: str):
         homework_picture = self.db.query(HomeworkPicture).filter(

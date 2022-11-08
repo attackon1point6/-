@@ -47,7 +47,10 @@ def model_to_dict(model):  # 这段来自于参考资源
         if isinstance(col.type, DateTime):
             value = convert_datetime(getattr(model, col.name))
         elif isinstance(col.type, Numeric):
-            value = float(getattr(model, col.name))
+            if model is not None:
+                value = float(getattr(model, col.name))
+            else:
+                value = float(getattr(model, col.name))
         else:
             value = getattr(model, col.name)
         yield col.name, value
